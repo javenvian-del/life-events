@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -29,14 +30,33 @@ export default function LoginPage() {
         if (error) throw error
         router.push('/timeline')
       } else {
-        // 注册
+        // 注册 - 验证两次密码是否一致
+        if (password !== confirmPassword) {
+          throw new Error('两次输入的密码不一致，请重新输入')
+        }
+        if (password.length < 6) {
+          throw new Error('密码长度至少为 6 位')
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
         })
         if (error) throw error
-        setError('注册成功！请检查邮箱确认后登录。')
-        setIsLogin(true)
+
+        // 注册成功后直接登录
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        if (signInError) {
+          // 如果自动登录失败，提示用户手动登录
+          setError('注册成功！请使用邮箱和密码登录。')
+          setIsLogin(true)
+        } else {
+          // 自动登录成功，跳转到时间轴
+          router.push('/timeline')
+        }
       }
     } catch (err: any) {
       setError(err.message || '操作失败，请重试')
@@ -86,6 +106,24 @@ export default function LoginPage() {
               />
             </div>
 
+            {!isLogin && (
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                  确认密码
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+              </div>
+            )}
+
             {error && (
               <div className={`text-sm ${error.includes('成功') ? 'text-green-600' : 'text-red-600'}`}>
                 {error}
@@ -106,6 +144,7 @@ export default function LoginPage() {
               onClick={() => {
                 setIsLogin(!isLogin)
                 setError('')
+                setConfirmPassword('')
               }}
               className="text-primary hover:underline"
             >
