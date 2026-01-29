@@ -34,8 +34,8 @@ export default function LoginPage() {
         if (password !== confirmPassword) {
           throw new Error('两次输入的密码不一致，请重新输入')
         }
-        if (password.length < 6) {
-          throw new Error('密码长度至少为 6 位')
+        if (password.length < 8) {
+          throw new Error('密码长度至少为 8 位')
         }
 
         const { error } = await supabase.auth.signUp({
@@ -101,8 +101,8 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="••••••••"
-                minLength={6}
+                placeholder="至少8位"
+                minLength={8}
               />
             </div>
 
@@ -118,8 +118,8 @@ export default function LoginPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  placeholder="••••••••"
-                  minLength={6}
+                  placeholder="再次输入密码"
+                  minLength={8}
                 />
               </div>
             )}
